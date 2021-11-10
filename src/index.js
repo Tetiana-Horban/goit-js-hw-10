@@ -13,20 +13,25 @@ input.addEventListener(
   'input',
   debounce(() => {
     const valueInput = input.value.trim();
-    fetchCountries(valueInput).then(data => {
-      if (data.length > 10) {
-        return Notiflix.Notify.warning(
-          'Too many matches found. Please enter a more specific name.',
-        );
-      }
-      if (data.length >= 2 && data.length <= 10) {
-        return createCountryList(data);
-      }
-      if (data.status === 404) {
-        showError();
-      }
-      createCountryCard(data);
-    });
+    fetchCountries(valueInput)
+      .then(data => {
+        if (data.length > 10) {
+          return Notiflix.Notify.warning(
+            'Too many matches found. Please enter a more specific name.',
+          );
+        } else if (data.length === 1) {
+          clearConteiner();
+          createCountryCard(data);
+          return;
+        } else if (data.length >= 2 && data.length <= 10) {
+          clearConteiner();
+          createCountryList(data);
+          return;
+        } else if (data.status === 404) {
+          showError();
+        }
+      })
+      .catch(error => showError(error));
   }, DEBOUNCE_DELAY),
 );
 
@@ -34,19 +39,17 @@ function showError() {
   Notiflix.Notify.failure(`Oops, there is no country with that name`);
 }
 
-function createCountryCard({ name, flags, capital, languages, population }) {
-  countryCardConteiner.insertAdjacentHTML(
-    'beforeend',
-    `<div class='country-info__box'>
+function createCountryCard([{ name, flags, capital, languages, population }]) {
+  countryCardConteiner.innerHTML = `
   <img
     src='${flags.svg}'
     alt='${name.official}'
-    width='40'
-    height='20'
+    width='200'
+    height='70'
     class='country-info__img'
   />
   <h2 class='country-info__title'>${name.official}</h2>
-  <ul class='country-info__list'>
+  <ul class='country-info__list list'>
     <li class='country-info__item'>Capital:
       <p class='country-info__text'>${capital}</p>
     </li>
@@ -54,28 +57,27 @@ function createCountryCard({ name, flags, capital, languages, population }) {
       <p class='country-info__text'>${population}</p>
     </li>
     <li class='country-info__item'>Languages:
-      <p class="country-info__text">${languages}</p>
-      </ul>
+      <p class="country-info__text">${Object.values(languages).join(', ')}</p>
     </li>
   </ul>
-</div>
-`,
-  );
+`;
 }
 
-function createCountryList({ name, flags }) {
-  countryListConteiner.insertAdjacentHTML(
-    'beforeend',
-    `<li class='country-list__info'>
-  // <img
-  //   src='${flags.svg}'
-  //   width='40'
-  //   height='20'
-  //   alt='${name.official}'
-  //   class='country-list__img'
-  // />
-  // ${name.official}</li>`,
-  );
+function createCountryList(country) {
+  const countryList = country
+    .map(({ flags, name }) => {
+      return `<li class='country-list__info list'>
+    <img
+     src='${flags.svg}'
+     width='60'
+     height='40'
+     alt='${name.official}'
+     class='country-list__img'
+   />
+    ${name.official}</li>`;
+    })
+    .join('');
+  countryListConteiner.innerHTML = countryList;
 }
 
 function clearConteiner() {

@@ -2,6 +2,7 @@ import './css/styles.css';
 import Notiflix from 'notiflix';
 import debounce from 'lodash.debounce';
 import { fetchCountries } from './js/services/fetchCountries';
+import countryCard from './js/templates/country-card.hbs';
 
 const DEBOUNCE_DELAY = 300;
 
@@ -39,28 +40,8 @@ function showError() {
   Notiflix.Notify.failure(`Oops, there is no country with that name`);
 }
 
-function createCountryCard([{ name, flags, capital, languages, population }]) {
-  countryCardConteiner.innerHTML = `
-  <img
-    src='${flags.svg}'
-    alt='${name.official}'
-    width='200'
-    height='70'
-    class='country-info__img'
-  />
-  <h2 class='country-info__title'>${name.official}</h2>
-  <ul class='country-info__list list'>
-    <li class='country-info__item'>Capital:
-      <p class='country-info__text'>${capital}</p>
-    </li>
-    <li class='country-info__item'>Population:
-      <p class='country-info__text'>${population}</p>
-    </li>
-    <li class='country-info__item'>Languages:
-      <p class="country-info__text">${Object.values(languages).join(', ')}</p>
-    </li>
-  </ul>
-`;
+function createCountryCard(country) {
+  countryCardConteiner.innerHTML = countryCard(country);
 }
 
 function createCountryList(country) {
